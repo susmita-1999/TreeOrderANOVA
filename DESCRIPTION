@@ -1,0 +1,23 @@
+Package: TwoWayTreeAll
+Type: Package
+Title: Likelihood Ratio and MAX/MIN Tests for Two-Way ANOVA Under Tree Order Restriction
+Version: 0.1.0
+Authors@R: person("Susmita", "Chawlia", 
+                  email = "susmitachawlia16@gmail.com", 
+                  role = c("aut","cre"))
+Description: 
+    Provides three hypothesis testing procedures for two-way ANOVA 
+    under tree-order restrictions: 
+    (1) Likelihood Ratio Test (TwoWayTreeLRT), 
+    (2) MAX test (TreeMax), and 
+    (3) MIN test (TreeMin). 
+    All functions use parametric bootstrap to obtain critical values 
+    under heteroscedasticity and unequal sample sizes.
+License: GPL-3
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 7.3.3
+Imports:
+    MASS,
+    Matrix,
+    stats
