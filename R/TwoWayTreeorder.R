@@ -452,5 +452,6 @@ TwoWayTreeAll <- function(sample_data, significance_level) {
   M1  <- TreeMax(sample_data, significance_level = significance_level)
   M2  <- TreeMin(sample_data, significance_level = significance_level)
 
-  list(LRT = lrt, Max = M1, Min = M2)
+  list(LRT = lrt, M1 = M1, M2 = M2)
 }
+
