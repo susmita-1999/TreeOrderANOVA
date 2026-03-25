@@ -15,8 +15,8 @@
 #' @export
 TwoWayTreeLRT <- function(sample_data, significance_level){
   set.seed(123)
-  a <- length(sample_data)
-  b <- length(sample_data[[1]])
+  a <- length(sample_data)-1
+  b <- length(sample_data[[1]])-1
 
   R_MLE <- function(X, n) {
     X1 <- X[-1]
@@ -71,31 +71,31 @@ TwoWayTreeLRT <- function(sample_data, significance_level){
   }
 
   Func_MLE_0<-function(sample_data_list){
-    cell_means <- sapply(1:a, function(i)
-      sapply(1:b, function(j) mean(sample_data_list[[i]][[j]]))
+    cell_means <- sapply(1:(a+1), function(i)
+      sapply(1:(b+1), function(j) mean(sample_data_list[[i]][[j]]))
     )
-    cell_means<-matrix(cell_means, nrow = a, ncol = b, byrow = TRUE)
-    cell_ns <- sapply(1:a, function(i)
-      sapply(1:b, function(j) length(sample_data_list[[i]][[j]]))
+    cell_means<-matrix(cell_means, nrow = (a+1), ncol = (b+1), byrow = TRUE)
+    cell_ns <- sapply(1:(a+1), function(i)
+      sapply(1:(b+1), function(j) length(sample_data_list[[i]][[j]]))
     )
-    cell_ns <- matrix(cell_ns, nrow = a, ncol = b, byrow = TRUE)
-    cell_vars <- sapply(1:a, function(i)
-      sapply(1:b, function(j) ((cell_ns[i,j] -1)/cell_ns[i,j])*var(sample_data_list[[i]][[j]]))
+    cell_ns <- matrix(cell_ns, nrow = (a+1), ncol = (b+1), byrow = TRUE)
+    cell_vars <- sapply(1:(a+1), function(i)
+      sapply(1:(b+1), function(j) ((cell_ns[i,j] -1)/cell_ns[i,j])*var(sample_data_list[[i]][[j]]))
     )
-    cell_vars <- matrix(cell_vars, nrow = a, ncol = b, byrow = TRUE)
+    cell_vars <- matrix(cell_vars, nrow = (a+1), ncol = (b+1), byrow = TRUE)
     beta_0_0<-colSums(cell_means)
     var_0_0<-cell_vars
     repeat{
-      beta_1_0 <- sapply(1:b, function(j) {
+      beta_1_0 <- sapply(1:(b+1), function(j) {
         sum_1 <- sum(cell_ns[,j] / var_0_0[,j])
         sum_2 <- sum((cell_ns[,j] / var_0_0[,j]) * cell_means[,j])
         sum_2 / sum_1
       })
-      var_1_0 <- sapply(1:a, function(i)
-        sapply(1:b, function(j) (sum((sample_data_list[[i]][[j]]-beta_1_0[j])^2))/cell_ns[i,j]
+      var_1_0 <- sapply(1:(a+1), function(i)
+        sapply(1:(b+1), function(j) (sum((sample_data_list[[i]][[j]]-beta_1_0[j])^2))/cell_ns[i,j]
         ))
-      # ensure var_1_0 is matrix a x b
-      var_1_0 <- matrix(var_1_0, nrow = a, ncol = b, byrow = TRUE)
+      # ensure var_1_0 is matrix (a+1) x (b+1)
+      var_1_0 <- matrix(var_1_0, nrow = (a+1), ncol = (b+1), byrow = TRUE)
 
       if(max(abs(beta_1_0-beta_0_0))<0.00001)
       {
@@ -108,18 +108,18 @@ TwoWayTreeLRT <- function(sample_data, significance_level){
   }
 
   Func_MLE_1<-function(sample_data_list){
-    cell_means <- sapply(1:a, function(i)
-      sapply(1:b, function(j) mean(sample_data_list[[i]][[j]]))
+    cell_means <- sapply(1:(a+1), function(i)
+      sapply(1:(b+1), function(j) mean(sample_data_list[[i]][[j]]))
     )
-    cell_means<-matrix(cell_means, nrow = a, ncol = b, byrow = TRUE)
-    cell_ns <- sapply(1:a, function(i)
-      sapply(1:b, function(j) length(sample_data_list[[i]][[j]]))
+    cell_means<-matrix(cell_means, nrow = (a+1), ncol = (b+1), byrow = TRUE)
+    cell_ns <- sapply(1:(a+1), function(i)
+      sapply(1:(b+1), function(j) length(sample_data_list[[i]][[j]]))
     )
-    cell_ns <- matrix(cell_ns, nrow = a, ncol = b, byrow = TRUE)
-    cell_vars <- sapply(1:a, function(i)
-      sapply(1:b, function(j) ((cell_ns[i,j] -1)/cell_ns[i,j])*var(sample_data_list[[i]][[j]]))
+    cell_ns <- matrix(cell_ns, nrow = (a+1), ncol = (b+1), byrow = TRUE)
+    cell_vars <- sapply(1:(a+1), function(i)
+      sapply(1:(b+1), function(j) ((cell_ns[i,j] -1)/cell_ns[i,j])*var(sample_data_list[[i]][[j]]))
     )
-    cell_vars <- matrix(cell_vars, nrow = a, ncol = b, byrow = TRUE)
+    cell_vars <- matrix(cell_vars, nrow = (a+1), ncol = (b+1), byrow = TRUE)
     alpha_0_1 <- rowSums(cell_means)
     beta_0_1 <- colSums(cell_means)-mean(cell_means)
     var_0_1 <- cell_vars
@@ -127,34 +127,34 @@ TwoWayTreeLRT <- function(sample_data, significance_level){
 
     repeat{
       w <- rowSums(u_0_1)
-      x <- sapply(1:a, function(i) {
+      x <- sapply(1:(a+1), function(i) {
         sum_4 <- sum(u_0_1[i, ] * cell_means[i, ])
-        sum_5 <- sum((u_0_1[i, b]-u_0_1[i, 1:(b-1)]) * beta_0_1[1:(b-1)])
+        sum_5 <- sum((u_0_1[i, (b+1)]-u_0_1[i, 1:b]) * beta_0_1[1:b])
         (1 / w[i]) * (sum_4 + sum_5)
       })
       alpha_1<- R_MLE(x,w)  #### Updated value of alpha
 
       # Compute t_b
-      t_b <- sapply(1:(b-1), function(j) {
-        sum(u_0_1[, j] * (cell_means[, j] - alpha_1) - u_0_1[, b] * (cell_means[, b] - alpha_1))
+      t_b <- sapply(1:b, function(j) {
+        sum(u_0_1[, j] * (cell_means[, j] - alpha_1) - u_0_1[, (b+1)] * (cell_means[, (b+1)] - alpha_1))
       })
 
       # Compute Q and solve for beta_1
-      Q_1 <- a * colMeans(u_0_1[, 1:(b-1), drop = FALSE])
-      Q <- diag(Q_1, nrow = b - 1) + a * mean(u_0_1[, b]) * matrix(1, nrow = b - 1, ncol = b - 1)
+      Q_1 <- a * colMeans(u_0_1[, 1:b, drop = FALSE])
+      Q <- diag(Q_1, nrow = b) + a * mean(u_0_1[, (b+1)]) * matrix(1, nrow = b, ncol = b)
       beta_1_old <- solve(Q, t_b)
 
       # Complete beta vector
       beta_1 <- c(beta_1_old, -sum(beta_1_old))
 
       # Update variances
-      var_1 <- sapply(1:a, function(i) {
-        sapply(1:b, function(j) {
+      var_1 <- sapply(1:(a+1), function(i) {
+        sapply(1:(b+1), function(j) {
           (1 / cell_ns[i, j]) * sum((sample_data_list[[i]][[j]] - alpha_1[i] - beta_1[j])^2)
         })
       })
-      # ensure var_1 is matrix a x b
-      var_1 <- matrix(var_1, nrow = a, ncol = b, byrow = TRUE)
+      # ensure var_1 is matrix (a+1) x (b+1)
+      var_1 <- matrix(var_1, nrow = (a+1), ncol = (b+1), byrow = TRUE)
 
       if(max(abs(alpha_1-alpha_0_1))<0.00001 & max(abs(beta_1-beta_0_1))<0.00001)  #### stopping criteria
       {
@@ -169,26 +169,26 @@ TwoWayTreeLRT <- function(sample_data, significance_level){
   }### Func_MLE_1
 
   Calculate_lambda <- function(sample_data_list) {
-    cell_means <- sapply(1:a, function(i)
-      sapply(1:b, function(j) mean(sample_data_list[[i]][[j]]))
+    cell_means <- sapply(1:(a+1), function(i)
+      sapply(1:(b+1), function(j) mean(sample_data_list[[i]][[j]]))
     )
-    cell_means<-matrix(cell_means,nrow = a,ncol = b,byrow = TRUE)
-    cell_ns <- sapply(1:a, function(i)
-      sapply(1:b, function(j) length(sample_data_list[[i]][[j]]))
+    cell_means<-matrix(cell_means,nrow = (a+1),ncol = (b+1),byrow = TRUE)
+    cell_ns <- sapply(1:(a+1), function(i)
+      sapply(1:(b+1), function(j) length(sample_data_list[[i]][[j]]))
     )
-    cell_ns <- matrix(cell_ns, nrow = a, ncol = b, byrow = TRUE)
-    cell_vars <- sapply(1:a, function(i)
-      sapply(1:b, function(j) ((cell_ns[i,j] -1)/cell_ns[i,j])*var(sample_data_list[[i]][[j]]))
+    cell_ns <- matrix(cell_ns, nrow = (a+1), ncol = (b+1), byrow = TRUE)
+    cell_vars <- sapply(1:(a+1), function(i)
+      sapply(1:(b+1), function(j) ((cell_ns[i,j] -1)/cell_ns[i,j])*var(sample_data_list[[i]][[j]]))
     )
-    cell_vars <- matrix(cell_vars, nrow = a, ncol = b, byrow = TRUE)
+    cell_vars <- matrix(cell_vars, nrow = (a+1), ncol = (b+1), byrow = TRUE)
     # Compute MLE variance estimates under H1 and H0
     mle1 <- Func_MLE_1(sample_data_list)
     mle0 <- Func_MLE_0(sample_data_list)
 
     # coerce to matrices with same dims and protect against zeros
-    mle1 <- matrix(mle1, nrow = a, ncol = b, byrow = TRUE)
-    mle0 <- matrix(mle0, nrow = a, ncol = b, byrow = TRUE)
-    cell_ns <- matrix(cell_ns, nrow = a, ncol = b, byrow = TRUE)
+    mle1 <- matrix(mle1, nrow = (a+1), ncol = (b+1), byrow = TRUE)
+    mle0 <- matrix(mle0, nrow = (a+1), ncol = (b+1), byrow = TRUE)
+    cell_ns <- matrix(cell_ns, nrow = (a+1), ncol = (b+1), byrow = TRUE)
 
     # Compute test statistic (likelihood ratio) elementwise then product
     elementwise <- (mle1 / mle0)^(cell_ns / 2)
@@ -201,14 +201,14 @@ TwoWayTreeLRT <- function(sample_data, significance_level){
     lapply(row, function(cell) cell[!is.na(cell)])
   })
   n_sample<- 10000
-  n<- sapply(1:a, function(i)
-    sapply(1:b, function(j) length(sample_data[[i]][[j]]))
+  n<- sapply(1:(a+1), function(i)
+    sapply(1:(b+1), function(j) length(sample_data[[i]][[j]]))
   )
-  n <- matrix(n, nrow = a, ncol = b, byrow = TRUE)
+  n <- matrix(n, nrow = (a+1), ncol = (b+1), byrow = TRUE)
   lambda_values_star <- numeric(n_sample)
   for (i in 1:n_sample) {
-    bootstrap_samples <- lapply(1:a, function(i){
-      lapply(1:b, function(j){
+    bootstrap_samples <- lapply(1:(a+1), function(i){
+      lapply(1:(b+1), function(j){
         rnorm(n[i,j], mean = 0, sd = sqrt(var(sample_data[[i]][[j]])))
       })
     } )
@@ -248,8 +248,8 @@ TreeMax <- function(sample_data, significance_level = 0.05) {
   ## -----------------------------------
   ## DIMENSIONS
   ## -----------------------------------
-  a <- length(sample_data)
-  b <- length(sample_data[[1]])
+  a <- length(sample_data)-1
+  b <- length(sample_data[[1]])-1
 
   ## Remove NA values in every cell
   sample_data <- lapply(sample_data, function(row) {
@@ -262,29 +262,29 @@ TreeMax <- function(sample_data, significance_level = 0.05) {
   Max_Func <- function(sample_data_list) {
 
     # sample sizes (recomputed inside)
-    cell_ns <- sapply(1:a, function(i)
-      sapply(1:b, function(j) length(sample_data_list[[i]][[j]]))
+    cell_ns <- sapply(1:(a+1), function(i)
+      sapply(1:(b+1), function(j) length(sample_data_list[[i]][[j]]))
     )
-    cell_ns<-matrix(cell_ns,nrow = a,ncol = b,byrow = TRUE)
+    cell_ns<-matrix(cell_ns,nrow = (a+1),ncol = (b+1),byrow = TRUE)
     # cell means
-    cell_mean_data <- sapply(1:a, function(i)
-      sapply(1:b, function(j) mean(sample_data_list[[i]][[j]]))
+    cell_mean_data <- sapply(1:(a+1), function(i)
+      sapply(1:(b+1), function(j) mean(sample_data_list[[i]][[j]]))
     )
-    cell_mean_data<-matrix(cell_mean_data,nrow = a,ncol = b,byrow = TRUE)
+    cell_mean_data<-matrix(cell_mean_data,nrow = (a+1),ncol = (b+1),byrow = TRUE)
     # row means
-    cell_mean <- sapply(1:a, function(i) mean(cell_mean_data[i, ]))
+    cell_mean <- sapply(1:(a+1), function(i) mean(cell_mean_data[i, ]))
 
     # variance component
-    var1 <- sapply(1:(a - 1), function(i) {
-      sum(sapply(1:b, function(j) {
+    var1 <- sapply(1:a, function(i) {
+      sum(sapply(1:(b+1), function(j) {
         var(sample_data_list[[i + 1]][[j]]) / cell_ns[i + 1, j] +
           var(sample_data_list[[1]][[j]])     / cell_ns[1, j]
       }))
     })
 
     # Test statistic
-    D <- sapply(1:(a - 1), function(i) {
-      (cell_mean[i + 1] - cell_mean[1]) / sqrt(var1[i] / b^2)
+    D <- sapply(1:a, function(i) {
+      (cell_mean[i + 1] - cell_mean[1]) / sqrt(var1[i] / (b+1)^2)
     })
 
     return(max(D))
@@ -297,21 +297,21 @@ TreeMax <- function(sample_data, significance_level = 0.05) {
   boots_sample <- 10000
 
   # Precompute cell variances & sizes (based on original data)
-  cell_vars <- sapply(1:a, function(i)
-    sapply(1:b, function(j) var(sample_data[[i]][[j]]))
+  cell_vars <- sapply(1:(a+1), function(i)
+    sapply(1:(b+1), function(j) var(sample_data[[i]][[j]]))
   )
-  cell_vars<-matrix(cell_vars,nrow = a,ncol = b, byrow = TRUE)
-  cell_ns <- sapply(1:a, function(i)
-    sapply(1:b, function(j) length(sample_data[[i]][[j]]))
+  cell_vars<-matrix(cell_vars,nrow = (a+1),ncol = (b+1), byrow = TRUE)
+  cell_ns <- sapply(1:(a+1), function(i)
+    sapply(1:(b+1), function(j) length(sample_data[[i]][[j]]))
   )
-  cell_ns<-matrix(cell_ns,nrow = a,ncol = b, byrow = TRUE)
+  cell_ns<-matrix(cell_ns,nrow = (a+1),ncol = (b+1), byrow = TRUE)
   max_boot <- numeric(boots_sample)
 
   for (k in 1:boots_sample) {
 
     # generate bootstrap sample with same sizes & variances
-    bootstrap_samples <- lapply(1:a, function(i) {
-      lapply(1:b, function(j) {
+    bootstrap_samples <- lapply(1:(a+1), function(i) {
+      lapply(1:(b+1), function(j) {
         rnorm(
           n = cell_ns[i, j],
           mean = 0,
@@ -353,8 +353,8 @@ TreeMin <- function(sample_data, significance_level = 0.05) {
   ## -----------------------------------
   ## DIMENSIONS
   ## -----------------------------------
-  a <- length(sample_data)
-  b <- length(sample_data[[1]])
+  a <- length(sample_data)-1
+  b <- length(sample_data[[1]])-1
 
   ## Remove NA values in every cell
   sample_data <- lapply(sample_data, function(row) {
@@ -367,29 +367,29 @@ TreeMin <- function(sample_data, significance_level = 0.05) {
   Min_Func <- function(sample_data_list) {
 
     # sample sizes (recomputed inside)
-    cell_ns <- sapply(1:a, function(i)
-      sapply(1:b, function(j) length(sample_data_list[[i]][[j]]))
+    cell_ns <- sapply(1:(a+1), function(i)
+      sapply(1:(b+1), function(j) length(sample_data_list[[i]][[j]]))
     )
-    cell_ns<-matrix(cell_ns,nrow = a,ncol = b,byrow = TRUE)
+    cell_ns<-matrix(cell_ns,nrow = (a+1),ncol = (b+1),byrow = TRUE)
     # cell means
-    cell_mean_data <- sapply(1:a, function(i)
-      sapply(1:b, function(j) mean(sample_data_list[[i]][[j]]))
+    cell_mean_data <- sapply(1:(a+1), function(i)
+      sapply(1:(b+1), function(j) mean(sample_data_list[[i]][[j]]))
     )
-    cell_mean_data<-matrix(cell_mean_data,nrow = a,ncol = b,byrow = TRUE)
+    cell_mean_data<-matrix(cell_mean_data,nrow = (a+1),ncol = (b+1),byrow = TRUE)
     # row means
-    cell_mean <- sapply(1:a, function(i) mean(cell_mean_data[i, ]))
+    cell_mean <- sapply(1:(a+1), function(i) mean(cell_mean_data[i, ]))
 
     # variance component
-    var1 <- sapply(1:(a - 1), function(i) {
-      sum(sapply(1:b, function(j) {
+    var1 <- sapply(1:a, function(i) {
+      sum(sapply(1:(b+1), function(j) {
         var(sample_data_list[[i + 1]][[j]]) / cell_ns[i + 1, j] +
           var(sample_data_list[[1]][[j]])     / cell_ns[1, j]
       }))
     })
 
     # Test statistic
-    D <- sapply(1:(a - 1), function(i) {
-      (cell_mean[i + 1] - cell_mean[1]) / sqrt(var1[i] / b^2)
+    D <- sapply(1:a, function(i) {
+      (cell_mean[i + 1] - cell_mean[1]) / sqrt(var1[i] / (b+1)^2)
     })
 
     return(min(D))
@@ -402,21 +402,21 @@ TreeMin <- function(sample_data, significance_level = 0.05) {
   boots_sample <- 10000
 
   # Precompute cell variances & sizes (based on original data)
-  cell_vars <- sapply(1:a, function(i)
-    sapply(1:b, function(j) var(sample_data[[i]][[j]]))
+  cell_vars <- sapply(1:(a+1), function(i)
+    sapply(1:(b+1), function(j) var(sample_data[[i]][[j]]))
   )
-  cell_vars<-matrix(cell_vars,nrow = a,ncol = b, byrow = TRUE)
-  cell_ns <- sapply(1:a, function(i)
-    sapply(1:b, function(j) length(sample_data[[i]][[j]]))
+  cell_vars<-matrix(cell_vars,nrow = (a+1),ncol = (b+1), byrow = TRUE)
+  cell_ns <- sapply(1:(a+1), function(i)
+    sapply(1:(b+1), function(j) length(sample_data[[i]][[j]]))
   )
-  cell_ns<-matrix(cell_ns,nrow = a,ncol = b, byrow = TRUE)
+  cell_ns<-matrix(cell_ns,nrow = (a+1),ncol = (b+1), byrow = TRUE)
   min_boot <- numeric(boots_sample)
 
   for (k in 1:boots_sample) {
 
     # generate bootstrap sample with same sizes & variances
-    bootstrap_samples <- lapply(1:a, function(i) {
-      lapply(1:b, function(j) {
+    bootstrap_samples <- lapply(1:(a+1), function(i) {
+      lapply(1:(b+1), function(j) {
         rnorm(
           n = cell_ns[i, j],
           mean = 0,
